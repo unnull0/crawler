@@ -12,8 +12,26 @@ import (
 	"golang.org/x/text/transform"
 )
 
+type FetchType int
+
+const (
+	BaseFetchType FetchType = iota
+	BrowserFetchType
+)
+
 type Fetcher interface {
 	Get(req *Request) ([]byte, error)
+}
+
+func NewFetcher(tp FetchType) Fetcher {
+	switch tp {
+	case BaseFetchType:
+		return &baseFetch{}
+	case BrowserFetchType:
+		return &browserFetch{}
+	default:
+		return &browserFetch{}
+	}
 }
 
 type baseFetch struct{}
@@ -53,6 +71,12 @@ func (b *browserFetch) Get(req *Request) ([]byte, error) {
 	resp, err := client.Do(newReq)
 	if err != nil {
 		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error status code:%d", resp.StatusCode)
 	}
 
 	bodyReader := bufio.NewReader(resp.Body)
