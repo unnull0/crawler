@@ -59,13 +59,18 @@ func (f *baseFetch) Get(req *Request) ([]byte, error) {
 type browserFetch struct{}
 
 func (b *browserFetch) Get(req *Request) ([]byte, error) {
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: req.Timeout,
+	}
 
 	newReq, err := http.NewRequest("GET", req.URL, nil)
 	if err != nil {
-		return nil, fmt.Errorf("request URL error:%v\n", err)
+		return nil, fmt.Errorf("request URL error:%v", err)
 	}
 
+	if len(req.Cookie) > 0 {
+		newReq.Header.Set("Cookie", req.Cookie)
+	}
 	newReq.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.57")
 
 	resp, err := client.Do(newReq)
