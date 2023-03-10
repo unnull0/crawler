@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
@@ -74,6 +75,7 @@ func (b *browserFetch) Get(req *Request) ([]byte, error) {
 	newReq.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.57")
 
 	resp, err := client.Do(newReq)
+	time.Sleep(req.WaitTime)
 	if err != nil {
 		return nil, err
 	}

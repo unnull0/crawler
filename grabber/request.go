@@ -7,7 +7,8 @@ type Request struct {
 	URL       string
 	Cookie    string
 	Timeout   time.Duration
-	ParseFunc func([]byte) ParseResult
+	WaitTime  time.Duration
+	ParseFunc func([]byte, *Request) ParseResult
 }
 
 type ParseResult struct {

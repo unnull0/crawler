@@ -8,9 +8,9 @@ import (
 
 //获取网页所有租房文章链接，内容包含阳台就返回对应文章的链接
 
-const cityListRe = `(<https://www.douban.com/group/topic/[0-9a-z]+/>)"[^>]*>([^<]+)</a>`
+const cityListRe = `(https://www.douban.com/group/topic/[0-9a-z]+/)"[^>]*>([^<]+)</a>`
 
-func ParseURL(contents []byte) grabber.ParseResult {
+func ParseURL(contents []byte, req *grabber.Request) grabber.ParseResult {
 	re := regexp.MustCompile(cityListRe)
 	matches := re.FindAllSubmatch(contents, -1) //找到所有匹配的正则内容
 	result := grabber.ParseResult{}
@@ -18,8 +18,11 @@ func ParseURL(contents []byte) grabber.ParseResult {
 	for _, m := range matches {
 		URL := string(m[1])
 		result.Requests = append(result.Requests, &grabber.Request{
-			URL: URL,
-			ParseFunc: func(c []byte) grabber.ParseResult {
+			URL:      URL,
+			Cookie:   req.Cookie,
+			Timeout:  req.Timeout,
+			WaitTime: req.WaitTime,
+			ParseFunc: func(c []byte, request *grabber.Request) grabber.ParseResult {
 				return GetContent(c, URL)
 			},
 		})
@@ -27,7 +30,7 @@ func ParseURL(contents []byte) grabber.ParseResult {
 	return result
 }
 
-const ContentRe = `<div class="topic-content">[\s\S]*?阳台[\s\S]*?<div`
+const ContentRe = `<div class="topic-content">[\s\S]*?阳台\s\S]*?<div`
 
 func GetContent(contents []byte, URL string) grabber.ParseResult {
 	re := regexp.MustCompile(ContentRe)
