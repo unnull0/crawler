@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/unnull0/crawler/extensions"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/unicode"
@@ -57,11 +58,13 @@ func (f *baseFetch) Get(req *Request) ([]byte, error) {
 	return ioutil.ReadAll(utf8Reader)
 }
 
-type browserFetch struct{}
+type browserFetch struct {
+	Timeout time.Duration
+}
 
 func (b *browserFetch) Get(req *Request) ([]byte, error) {
 	client := &http.Client{
-		Timeout: req.Timeout,
+		Timeout: b.Timeout,
 	}
 
 	newReq, err := http.NewRequest("GET", req.URL, nil)
@@ -69,13 +72,13 @@ func (b *browserFetch) Get(req *Request) ([]byte, error) {
 		return nil, fmt.Errorf("request URL error:%v", err)
 	}
 
-	if len(req.Cookie) > 0 {
-		newReq.Header.Set("Cookie", req.Cookie)
+	if len(req.Task.Cookie) > 0 {
+		newReq.Header.Set("Cookie", req.Task.Cookie)
 	}
-	newReq.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.57")
+	newReq.Header.Set("User-Agent", extensions.GenerateRandomUA())
 
 	resp, err := client.Do(newReq)
-	time.Sleep(req.WaitTime)
+	time.Sleep(req.Task.WaitTime)
 	if err != nil {
 		return nil, err
 	}
