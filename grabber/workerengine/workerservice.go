@@ -11,6 +11,7 @@ type Engine struct {
 	out         chan grabber.ParseResult
 	Visited     map[string]bool
 	VisitedLock sync.Mutex
+
 	failures    map[string]*grabber.Request
 	failureLock sync.Mutex
 	options
@@ -31,7 +32,6 @@ func NewEngine(opts ...Option) *Engine {
 }
 
 func (e *Engine) Run() {
-
 	go e.Schedule()
 	for i := 0; i < e.WorkCount; i++ {
 		go e.CreateWork()
@@ -42,9 +42,13 @@ func (e *Engine) Run() {
 func (e *Engine) Schedule() {
 	var reqs []*grabber.Request
 	for _, seed := range e.Seeds {
-		seed.RootReq.Task = seed
-		seed.RootReq.URL = seed.URL
-		reqs = append(reqs, seed.RootReq)
+		task := Tkstore.hash[seed.Name]
+		task.Fetcher = seed.Fetcher
+		rootReqs := task.Rule.Root()
+		for _, req := range rootReqs {
+			req.Task = task
+		}
+		reqs = append(reqs, rootReqs...)
 	}
 	go e.scheduler.Schedule()
 	go e.scheduler.Push(reqs...)
@@ -63,18 +67,20 @@ func (e *Engine) CreateWork() {
 		e.StoreVisited(r)
 
 		body, err := r.Task.Fetcher.Get(r)
+		if err != nil {
+			e.Logger.Error("get content error", zap.Error(err))
+			e.SetFailure(r)
+			continue
+		}
+
 		if len(body) < 6000 {
 			e.Logger.Error("fetch failed", zap.Int("body length", len(body)), zap.String("URL", r.URL))
 			e.SetFailure(r)
 			continue
 		}
 
-		if err != nil {
-			e.Logger.Error("get content error", zap.Error(err))
-			e.SetFailure(r)
-			continue
-		}
-		result := r.ParseFunc(body, r)
+		rule := r.Task.Rule.Trunk[r.RuleName]
+		result := rule.ParseFunc(&grabber.Context{Body: body, Req: r})
 		if len(result.Requests) > 0 {
 			go e.scheduler.Push(result.Requests...)
 		}

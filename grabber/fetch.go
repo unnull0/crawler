@@ -30,9 +30,9 @@ func NewFetcher(tp FetchType) Fetcher {
 	case BaseFetchType:
 		return &baseFetch{}
 	case BrowserFetchType:
-		return &browserFetch{}
+		return &BrowserFetch{}
 	default:
-		return &browserFetch{}
+		return &BrowserFetch{}
 	}
 }
 
@@ -58,11 +58,11 @@ func (f *baseFetch) Get(req *Request) ([]byte, error) {
 	return ioutil.ReadAll(utf8Reader)
 }
 
-type browserFetch struct {
+type BrowserFetch struct {
 	Timeout time.Duration
 }
 
-func (b *browserFetch) Get(req *Request) ([]byte, error) {
+func (b *BrowserFetch) Get(req *Request) ([]byte, error) {
 	client := &http.Client{
 		Timeout: b.Timeout,
 	}

@@ -8,21 +8,23 @@ import (
 )
 
 type Task struct {
+	Name     string
 	URL      string
 	Cookie   string
 	Reload   bool
 	WaitTime time.Duration
 	MaxDepth int
-	RootReq  *Request
-	Fetcher  Fetcher
+	// RootReq  *Request
+	Fetcher Fetcher
+	Rule    RuleTree
 }
 
 type Request struct {
-	Task      *Task
-	URL       string
-	Method    string
-	Depth     int
-	ParseFunc func([]byte, *Request) ParseResult
+	Task     *Task
+	URL      string
+	Method   string
+	Depth    int
+	RuleName string
 }
 
 type ParseResult struct {
