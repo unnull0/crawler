@@ -3,6 +3,7 @@ package workerengine
 import (
 	"sync"
 
+	"github.com/unnull0/crawler/collector"
 	"github.com/unnull0/crawler/grabber"
 	"go.uber.org/zap"
 )
@@ -42,8 +43,9 @@ func (e *Engine) Run() {
 func (e *Engine) Schedule() {
 	var reqs []*grabber.Request
 	for _, seed := range e.Seeds {
-		task := Tkstore.hash[seed.Name]
+		task := Tkstore.Hash[seed.Name]
 		task.Fetcher = seed.Fetcher
+		task.Storage = seed.Storage
 		rootReqs := task.Rule.Root()
 		for _, req := range rootReqs {
 			req.Task = task
@@ -93,6 +95,12 @@ func (e *Engine) HandleResult() {
 		select {
 		case result := <-e.out:
 			for _, item := range result.Items {
+				switch d := item.(type) {
+				case *collector.DataCell:
+					name := d.GetTaskName()
+					task := Tkstore.Hash[name]
+					task.Storage.Save(d)
+				}
 				e.Logger.Info("result", zap.String("url", item.(string)))
 			}
 		}

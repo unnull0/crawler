@@ -11,15 +11,19 @@ func init() {
 
 var Tkstore = &TaskStore{
 	list: []*grabber.Task{},
-	hash: map[string]*grabber.Task{},
+	Hash: map[string]*grabber.Task{},
 }
 
 type TaskStore struct {
 	list []*grabber.Task
-	hash map[string]*grabber.Task
+	Hash map[string]*grabber.Task
 }
 
 func (t *TaskStore) Add(task *grabber.Task) {
-	t.hash[task.Name] = task
+	t.Hash[task.Name] = task
 	t.list = append(t.list, task)
+}
+
+func GetFields(taskName, ruleName string) []string {
+	return Tkstore.Hash[taskName].Rule.Trunk[ruleName].ItemFields
 }

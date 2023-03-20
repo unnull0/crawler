@@ -27,8 +27,8 @@ var DoubantenementTask = &grabber.Task{
 			return root
 		},
 		Trunk: map[string]*grabber.Rule{
-			"解析网站URL": &grabber.Rule{ParseURL},
-			"扫描阳台":    &grabber.Rule{GetContent},
+			"解析网站URL": &grabber.Rule{ParseFunc: ParseURL},
+			"扫描阳台":    &grabber.Rule{ParseFunc: GetContent},
 		},
 	},
 }

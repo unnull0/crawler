@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"time"
+
+	"github.com/unnull0/crawler/collector"
 )
 
 type Task struct {
@@ -17,6 +19,7 @@ type Task struct {
 	// RootReq  *Request
 	Fetcher Fetcher
 	Rule    RuleTree
+	Storage collector.Storage
 }
 
 type Request struct {
@@ -25,6 +28,7 @@ type Request struct {
 	Method   string
 	Depth    int
 	RuleName string
+	TmpData  *Temp
 }
 
 type ParseResult struct {
