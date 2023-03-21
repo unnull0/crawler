@@ -46,6 +46,7 @@ func (e *Engine) Schedule() {
 		task := Tkstore.Hash[seed.Name]
 		task.Fetcher = seed.Fetcher
 		task.Storage = seed.Storage
+		task.Limit = seed.Limit
 		rootReqs := task.Rule.Root()
 		for _, req := range rootReqs {
 			req.Task = task
@@ -68,7 +69,7 @@ func (e *Engine) CreateWork() {
 		}
 		e.StoreVisited(r)
 
-		body, err := r.Task.Fetcher.Get(r)
+		body, err := r.Fetch()
 		if err != nil {
 			e.Logger.Error("get content error", zap.Error(err))
 			e.SetFailure(r)
@@ -101,7 +102,7 @@ func (e *Engine) HandleResult() {
 					task := Tkstore.Hash[name]
 					task.Storage.Save(d)
 				}
-				e.Logger.Info("result", zap.String("url", item.(string)))
+
 			}
 		}
 	}

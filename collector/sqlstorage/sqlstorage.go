@@ -54,7 +54,11 @@ func (s *SqlStore) Save(dataCells ...*collector.DataCell) error {
 			s.Table[name] = struct{}{}
 		}
 		if len(s.dataDocker) >= s.BatchCount {
-			s.Flush()
+			// s.dataDocker = append(s.dataDocker, data)
+			err := s.Flush()
+			if err != nil {
+				s.logger.Error("insert failed", zap.Error(err))
+			}
 		}
 		s.dataDocker = append(s.dataDocker, data)
 	}
@@ -84,6 +88,9 @@ func (s *SqlStore) Flush() error {
 	if len(s.dataDocker) == 0 {
 		return nil
 	}
+	defer func() {
+		s.dataDocker = nil
+	}()
 	args := make([]interface{}, 0)
 	for _, dataCell := range s.dataDocker {
 		taskName := dataCell.Data["Task"].(string)

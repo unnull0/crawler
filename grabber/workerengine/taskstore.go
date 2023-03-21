@@ -2,11 +2,11 @@ package workerengine
 
 import (
 	"github.com/unnull0/crawler/grabber"
-	"github.com/unnull0/crawler/tasklib/doubantenement"
+	"github.com/unnull0/crawler/tasklib/doubanbook"
 )
 
 func init() {
-	Tkstore.Add(doubantenement.DoubantenementTask)
+	Tkstore.Add(doubanbook.DoubanBookTask)
 }
 
 var Tkstore = &TaskStore{

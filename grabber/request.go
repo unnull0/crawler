@@ -1,12 +1,15 @@
 package grabber
 
 import (
+	"context"
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
+	"math/rand"
 	"time"
 
 	"github.com/unnull0/crawler/collector"
+	"github.com/unnull0/crawler/limiter"
 )
 
 type Task struct {
@@ -14,12 +17,13 @@ type Task struct {
 	URL      string
 	Cookie   string
 	Reload   bool
-	WaitTime time.Duration
+	WaitTime int
 	MaxDepth int
 	// RootReq  *Request
 	Fetcher Fetcher
 	Rule    RuleTree
 	Storage collector.Storage
+	Limit   limiter.RateLimiter
 }
 
 type Request struct {
@@ -34,6 +38,16 @@ type Request struct {
 type ParseResult struct {
 	Requests []*Request
 	Items    []interface{}
+}
+
+func (r *Request) Fetch() ([]byte, error) {
+	if err := r.Task.Limit.Wait(context.Background()); err != nil {
+		return nil, err
+	}
+
+	sleepTime := rand.Intn(r.Task.WaitTime * 1000)
+	time.Sleep(time.Duration(sleepTime) * time.Millisecond)
+	return r.Task.Fetcher.Get(r)
 }
 
 func (r *Request) Check() error {

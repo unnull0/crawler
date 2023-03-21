@@ -78,7 +78,6 @@ func (b *BrowserFetch) Get(req *Request) ([]byte, error) {
 	newReq.Header.Set("User-Agent", extensions.GenerateRandomUA())
 
 	resp, err := client.Do(newReq)
-	time.Sleep(req.Task.WaitTime)
 	if err != nil {
 		return nil, err
 	}

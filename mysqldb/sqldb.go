@@ -61,7 +61,7 @@ func (d *Sqldb) CreateTable(t TableData) error {
 	if len(t.ColumnNames) == 0 {
 		return errors.New("column can not be empty")
 	}
-	sql := `CREATE TABLE IF NOT EXISTS` + t.TableName + "("
+	sql := `CREATE TABLE IF NOT EXISTS ` + t.TableName + "("
 	if t.AutoKey {
 		sql += `id INT(12) NOT NULL PRIMARY KEY AUTO_INCREMENT,`
 	}
@@ -78,7 +78,7 @@ func (d *Sqldb) Insert(t TableData) error {
 	if len(t.ColumnNames) == 0 {
 		return errors.New("empty column")
 	}
-	sql := `INSERT INTO` + t.TableName + "("
+	sql := `INSERT INTO ` + t.TableName + "("
 	for _, v := range t.ColumnNames {
 		sql += v.Title + ","
 	}
